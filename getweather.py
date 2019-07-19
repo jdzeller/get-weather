@@ -30,4 +30,21 @@ def get_weather_data(closest_station):
 closest_station = get_gridpoints(args.lat, args.lon)
 weather_data = get_weather_data(closest_station)
 
-print(weather_data)
+weather_data_titles = {
+    'temperature': 'Temperature',
+    'dewpoint': 'Dewpoint',
+    'windDirection': 'Wind Direction',
+    'windSpeed': 'Wind Speed',
+    'windGust': 'Wind Gust',
+    'barometricPressure': 'Barometric Pressure',
+    'visibility': 'Visibility',
+}
+
+for key, value in weather_data_titles.items():
+    unit_code = weather_data['properties'][key]['unitCode']
+    unit_value = weather_data['properties'][key]['value']
+
+    if unit_code == 'unit:degC':
+        unit_value = round((unit_value * 9/5) + 32)
+
+    print(value + ": " + str(unit_value))
