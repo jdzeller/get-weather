@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import requests
 import sys
 import argparse
@@ -8,6 +10,7 @@ parser.add_argument('-la', metavar='lattitude', dest='lat', help='get weather by
 parser.add_argument('-ln', metavar='longitude', dest='lon', help='get weather by latitude/longitude')
 args = parser.parse_args()
 
+# Function that uses the geonames API to convert US zip codes to lattitude/longitude
 def get_lat_long(zip):
     base_zip_url = 'http://api.geonames.org/postalCodeLookupJSON?postalcode=' + str(zip) + '&country=US&username=jzeller'
     response = requests.get(base_zip_url)
@@ -19,6 +22,7 @@ def get_lat_long(zip):
 
     return coord
 
+# Function that finds the closest NWS station by lattitude/longitude
 def get_gridpoints(lat, lon):
     base_points_url = 'https://api.weather.gov/points/'
     location_points = lat + ',' + lon 
@@ -31,6 +35,7 @@ def get_gridpoints(lat, lon):
 
     return closest_station
 
+# Function that gets the latest weather data from the NWS station
 def get_weather_data(closest_station):
     closest_station_url = closest_station + '/observations/latest'
 
@@ -50,6 +55,7 @@ weather_data = get_weather_data(closest_station)
 weather_data_titles = {
     'temperature': 'Temperature',
     'dewpoint': 'Dewpoint',
+    'windChill': 'Wind Chill',
     'windDirection': 'Wind Direction',
     'windSpeed': 'Wind Speed',
     'windGust': 'Wind Gust',
@@ -63,5 +69,7 @@ for key, value in sorted(weather_data_titles.items()):
 
     if unit_code == 'unit:degC':
         unit_value = round((unit_value * 9/5) + 32)
+    elif unit_code == 'unit:Pa':
+        unit_value = round(unit_value * 0.00029530, 2)
 
     print(value + ": " + str(unit_value))
