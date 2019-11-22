@@ -2,10 +2,22 @@ import requests
 import sys
 import argparse
 
-parser = argparse.ArgumentParser(description='Process Input.')
-parser.add_argument('--lat', metavar='Latitude', dest='lat', help='latitude')
-parser.add_argument('--lon', metavar='Longitude', dest='lon', help='longitude')
+parser = argparse.ArgumentParser(description='Get the weather for zip codes or lat/lon in the US.')
+parser.add_argument('-z', metavar=' zip code', dest='zip', help='get weather by US zip code')
+parser.add_argument('-la', metavar='lattitude', dest='lat', help='get weather by latitude/longitude')
+parser.add_argument('-ln', metavar='longitude', dest='lon', help='get weather by latitude/longitude')
 args = parser.parse_args()
+
+def get_lat_long(zip):
+    base_zip_url = 'http://api.geonames.org/postalCodeLookupJSON?postalcode=' + str(zip) + '&country=US&username=jzeller'
+    response = requests.get(base_zip_url)
+    response_data = response.json()
+
+    coord = dict()
+    coord['lat'] = str(response_data['postalcodes'][0]['lat'])
+    coord['lng'] = str(response_data['postalcodes'][0]['lng'])
+
+    return coord
 
 def get_gridpoints(lat, lon):
     base_points_url = 'https://api.weather.gov/points/'
@@ -27,7 +39,12 @@ def get_weather_data(closest_station):
 
     return response_data
 
-closest_station = get_gridpoints(args.lat, args.lon)
+if args.zip is not None:
+    coord = get_lat_long(args.zip)
+    closest_station = get_gridpoints(coord['lat'], coord['lng'])
+else:
+    closest_station = get_gridpoints(args.lat, args.lon)
+
 weather_data = get_weather_data(closest_station)
 
 weather_data_titles = {
@@ -40,7 +57,7 @@ weather_data_titles = {
     'visibility': 'Visibility',
 }
 
-for key, value in weather_data_titles.items():
+for key, value in sorted(weather_data_titles.items()):
     unit_code = weather_data['properties'][key]['unitCode']
     unit_value = weather_data['properties'][key]['value']
 
