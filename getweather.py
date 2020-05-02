@@ -67,9 +67,17 @@ for key, value in sorted(weather_data_titles.items()):
     unit_code = weather_data['properties'][key]['unitCode']
     unit_value = weather_data['properties'][key]['value']
 
-    if unit_code == 'unit:degC':
+    if unit_value is None:
+        unit_value = 0
+    elif unit_code == 'unit:degC':
         unit_value = round((unit_value * 9/5) + 32)
     elif unit_code == 'unit:Pa':
         unit_value = round(unit_value * 0.00029530, 2)
+    elif unit_code == 'unit:m':
+        unit_value = round(unit_value * 0.00062137, 2)
+    elif unit_code == 'unit:m_s-1':
+        unit_value = round(unit_value * 2.236936, 2)
+    elif unit_code == 'unit:degree_(angle)':
+        unit_value = round(unit_value)
 
     print(value + ": " + str(unit_value))
